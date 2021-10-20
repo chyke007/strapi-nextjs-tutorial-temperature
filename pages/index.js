@@ -1,82 +1,85 @@
 import Head from 'next/head'
+import { useState, useEffect } from 'react'
+import { converter, fetchQuery, getUniqueTemp } from '../utils/helper'
 
-export default function Home() {
+export default function Home({ temperatures }) {
+  const [answer, setAnswer] = useState('')
+  const [from, setFrom] = useState('C')
+  const [to, setTo] = useState('F')
+  const [temperature, setTemperature] = useState(1)
+  const [options, setOptions] = useState([])
+
+  useEffect(() => {
+    setOptions(getUniqueTemp(temperatures, 'from'))
+  }, [temperatures])
+  
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    setAnswer(`${converter(temperatures, from, to, Number(temperature))} ${to}`)
+  }
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-2">
       <Head>
-        <title>Create Next App</title>
+        <title>Temperature Converter</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <main className="flex flex-col items-center justify-center w-full flex-1 px-20 text-center">
         <h1 className="text-6xl font-bold">
-          Welcome to{' '}
+          Temperature {' '}
           <a className="text-blue-600" href="https://nextjs.org">
-            Next.js!
+           Converter
           </a>
         </h1>
 
-        <p className="mt-3 text-2xl">
-          Get started by editing{' '}
-          <code className="p-3 font-mono text-lg bg-gray-100 rounded-md">
-            pages/index.js
-          </code>
-        </p>
+        <form className="space-y-4 text-gray-700" onSubmit={handleSubmit}>
+  <div className="flex flex-wrap">
+   
+  </div>
+  <div className="flex flex-wrap -mx-2 space-y-4 md:space-y-0">
+    <div className="w-full px-2 md:w-1/2">
+      <label className="block mb-1">From</label>
+      <select className="w-full h-10 pl-3 pr-6 text-base placeholder-gray-600 border rounded-lg appearance-none focus:shadow-outline" placeholder="Select From" value={from} onChange={ (e) => { setFrom(e.target.value)}}>
+      {options.map(e => (
+        <option value={e} key={e}>{e}</option>
+      ))}
+     </select>
+    </div>
+    <div className="w-full px-2 md:w-1/2">
+      <label className="block mb-1" >To</label>
+      <select className="w-full h-10 pl-3 pr-6 text-base placeholder-gray-600 border rounded-lg appearance-none focus:shadow-outline" placeholder="Select To" value={to} onChange={ (e) => { setTo(e.target.value)}}>
+      {options.map(e => (
+        <option value={e} key={e}>{e}</option>
+      ))}
+     </select>
+    </div>
+  </div>
+  <div className="flex flex-wrap -mx-2 space-y-4 md:space-y-0">
+    <div className="w-full px-2 md:w-1/2">
+      <label className="block mb-1">Value</label>
+      <input className="w-full h-10 px-3 text-base placeholder-gray-600 border rounded-lg focus:shadow-outline" type="number" value={temperature} onChange={ (e) => { setTemperature(e.target.value)}}/>
+    </div>
+    <div className="w-full px-2 md:w-1/2">
+    <input className="w-full h-10 px-3 my-7 cursor-pointer text-base placeholder-gray-600 border rounded-lg focus:shadow-outline hover:bg-blue-600 hover:text-white" type="submit" value="Convert"/>
+    </div>
+  </div>
+</form>
 
-        <div className="flex flex-wrap items-center justify-around max-w-4xl mt-6 sm:w-full">
-          <a
-            href="https://nextjs.org/docs"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Documentation &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Find in-depth information about Next.js features and API.
-            </p>
-          </a>
-
-          <a
-            href="https://nextjs.org/learn"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Learn &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Learn about Next.js in an interactive course with quizzes!
-            </p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Examples &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Discover and deploy boilerplate example Next.js projects.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className="p-6 mt-6 text-left border w-96 rounded-xl hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Deploy &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+        <div>
+          Result is : {answer}
         </div>
       </main>
-
-      <footer className="flex items-center justify-center w-full h-24 border-t">
-        <a
-          className="flex items-center justify-center"
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className="h-4 ml-2" />
-        </a>
-      </footer>
     </div>
   )
 }
+
+export async function getStaticProps() {
+  const temperatures = await fetchQuery('temperatures')
+  return {
+    props: {
+      temperatures
+    }
+  }
+}
+
